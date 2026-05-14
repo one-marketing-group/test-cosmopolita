@@ -51,12 +51,18 @@
     /* Result */
     .profile-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1.25rem; }
     .pill { font-size: 12px; background: #f3ede9; color: #8B6F5E; padding: 4px 11px; border-radius: 20px; }
-    .result-text { font-size: 15px; color: #1a1a1a; line-height: 1.75; white-space: pre-wrap; }
+    
+    /* Mejorado para Markdown de Gemini */
+    .result-text { font-size: 15px; color: #1a1a1a; line-height: 1.75; }
+    .result-text p { margin-bottom: 1rem; }
+    .result-text ul { margin-left: 1.5rem; margin-bottom: 1rem; }
+    .result-text li { margin-bottom: 0.5rem; }
+    .result-text strong { font-weight: 600; color: #8B6F5E; }
 
     .cta-card { background: #f9f5f2; border: 0.5px solid #d4b8a8; border-radius: 16px; padding: 1.75rem; text-align: center; margin-top: 1rem; }
     .cta-title { font-family: 'Playfair Display', serif; font-size: 18px; margin-bottom: 6px; }
     .cta-sub { font-size: 13px; color: #888; margin-bottom: 1.25rem; }
-    .btn-cta { background: #8B6F5E; color: #fff; border: none; border-radius: 10px; padding: 12px 30px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+    .btn-cta { background: #8B6F5E; color: #fff; border: none; border-radius: 10px; padding: 12px 30px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; text-decoration: none; display: inline-block;}
     .btn-cta:hover { background: #7a5f4f; }
 
     .restart { background: none; border: none; color: #aaa; font-size: 13px; cursor: pointer; text-decoration: underline; display: block; margin: 1.25rem auto 0; font-family: 'DM Sans', sans-serif; }
@@ -64,12 +70,14 @@
 
     @media(max-width:480px){ .opts-grid{ grid-template-columns: 1fr; } }
   </style>
+  <!-- Marcador para convertir Markdown de Gemini a HTML (Opcional pero recomendado) -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
 <div class="wrap">
   <div class="header">
     <div class="logo">Cosmo<span>polita</span></div>
-    <div class="tagline">Diagnóstico inteligente de piel</div>
+    <div class="tagline">Pre-Diagnóstico Inteligente</div>
   </div>
   <div class="step-indicator" id="dots"></div>
   <div id="quiz"></div>
@@ -140,20 +148,8 @@ const PROT=[
   {id:'4.4',label:'Casi siempre',desc:'5–6 veces a la semana'},
   {id:'4.5',label:'Siempre',desc:'Todos los días'},
 ];
-const PRODUCTS=`
-ACLARADOR: Aclara y unifica tono. Ácido kójico, Ascórbico, Té verde, uva. Para manchas oscuras, melasma, tono desigual. NO en: alergias, brotes activos, embarazo. Uso: Noche.
-TRANEX-K: Melasma y manchas postinflamatorias. Ácido tranexámico, Kójico. NO en: rosácea activa, sin protector, embarazo. Uso: Noche.
-ANTIOX: Tono apagado, antioxidante. Ascórbico, Hialurónico, Alantoína. Para piel deshidratada, primeros signos edad. NO en: acné severo, dermatitis. Uso: Día.
-NIACINAMIDA Y ZINC: Control grasa y brillo. Niacinamida, Zinc. Para grasa/mixta, poros, acné leve-moderado. NO en: rosácea activa, piel muy seca, acné severo. Uso: Día y noche.
-ESPUMA LIMPIADORA: Limpiador antibacteriano. Kójico, Alantoína, Aminoácidos seda. Para manchas leves, tono desigual. NO en: lesiones abiertas. Uso: Día y noche.
-ACNIDERM: Pieles acneicas. Salicílico, Óxido zinc, Azufre, Resorcinol. Para grasa/mixta, acné leve-moderado, puntos negros. NO en: piel sensible/seca. Uso: Noche.
-HIDRAT: Humectante. Alantoína, Té verde, Pantenol. Para sensible/reactiva, mixta/grasa, deshidratación. Uso: Día y noche.
-CONTORNO: Ojeras, bolsas, líneas. CoQ10, Hialurónico, Colágeno, Vit E. Para líneas expresión, ojeras. NO en: inflamación activa. Uso: Día y noche.
-MANDELIC CREMA: Líneas finas, textura. Mandélico, Té verde. Para envejecimiento inicial, pieles sensibles. NO en: rosácea activa, sin protector, embarazo. Uso: Noche 2x semana.
-ANTI-AGE: Signos tempranos. Ascórbico, Hialurónico, Colágeno, Vit E. Para tono apagado, líneas finas. NO en: acné inflamatorio, rosácea en brote. Uso: Día y noche.
-MANDELIC GEL: Acné inflamatorio localizado. Mandélico, Té verde. Para brotes localizados, acné leve-moderado. Uso: Noche 2-3x semana.
-ROSARNIC GEL: Control rosácea. Metronidazol, Árnica. Para rosácea leve-moderada. NO en: rosácea severa. Uso: Noche.
-`;
+
+// Eliminamos const PRODUCTS porque ya no se usa.
 
 let s={step:0,conds:[],subs:{},skin:null,solar:null,prot:null,subIdx:0};
 
@@ -269,11 +265,12 @@ function render(){
       <div class="q-title">¿Con qué frecuencia usas protector solar?</div>
       <div class="q-hint">Selecciona solo una opción</div>
       <div class="opts-list">${PROT.map(o=>opt(o,s.prot===o.id,false)).join('')}</div>
-      <div class="nav"><button class="btn-back" onclick="back()">← Atrás</button><button class="btn-next${ready()?' on':''}" onclick="next()">Ver mi rutina →</button></div>
+      <div class="nav"><button class="btn-back" onclick="back()">← Atrás</button><button class="btn-next${ready()?' on':''}" onclick="next()">Ver mi diagnóstico →</button></div>
     </div>`;
   }
 }
 
+// Nuevo Prompt Orientado al Resumen Médico
 function buildPrompt(){
   const cLabels=s.conds.map(id=>CONDITIONS.find(x=>x.id===id)?.label||id);
   let sub='';
@@ -288,19 +285,18 @@ function buildPrompt(){
   const solL=SOLAR.find(x=>x.id===s.solar)?.label||s.solar;
   const protL=PROT.find(x=>x.id===s.prot)?.label||s.prot;
 
-  return `Toma el rol de una profesional bioquímica farmacéutica, experta en tratamiento de piel. Trabajas para Cosmopolita.
+  return `Toma el rol de una profesional experta y empática de Cosmopolita.
+La clienta acaba de terminar su test de piel con estos resultados:
+- TIPO DE PIEL: ${skinL}
+- CONDICIONES A TRATAR: ${cLabels.join(', ')}
+- DETALLE:${sub}
+- SOL Y PROTECCIÓN: ${solL} / Usa protector: ${protL}
 
-Test de piel de la clienta:
-CONDICIONES: ${cLabels.join(', ')}
-DETALLE:${sub}
-TIPO DE PIEL: ${skinL}
-EXPOSICIÓN SOLAR: ${solL}
-PROTECTOR SOLAR: ${protL}
-
-CATÁLOGO PRODUCTOS COSMOPOLITA:
-${PRODUCTS}
-
-Redacta una rutina personalizada dividida en RUTINA DE MAÑANA y RUTINA DE NOCHE, usando solo productos del catálogo. Respeta las restricciones de cada producto. Al final, invita emocionalmente a agendar una cita con la especialista para un protocolo más profundo. Tono cálido, empático y profesional. Máximo 300 palabras. Usa saltos de párrafo claros entre mañana, noche y la invitación final.`;
+Redacta un mensaje dirigido a la clienta (máximo 150 palabras) con esta estructura:
+1. Saludo cálido confirmando que su test ha finalizado ('¡Hola! Tu test ha culminado...').
+2. Un diagnóstico muy breve y comprensivo ('Considerando que tienes ${skinL} con tendencia a...').
+3. Una lista con viñetas de 3 o 4 ingredientes activos clave que necesita su piel (ej. Ácido salicílico, etc.). Pon el nombre del ingrediente en negrita y da una brevísima razón de por qué le sirve. NO menciones marcas ni productos.
+4. Un cierre invitándola cordialmente a agendar su cita médica para obtener su protocolo personalizado en PDF.`;
 }
 
 function buildPills(){
@@ -322,8 +318,8 @@ function showLoading(){
   document.getElementById('quiz').innerHTML=`
     <div class="card loading">
       <div class="ld-dots"><div class="ld-dot"></div><div class="ld-dot"></div><div class="ld-dot"></div></div>
-      <div class="ld-title">Analizando tu piel...</div>
-      <div class="ld-sub">Preparando tu rutina personalizada con IA</div>
+      <div class="ld-title">Analizando tus respuestas...</div>
+      <div class="ld-sub">Generando pre-diagnóstico con IA</div>
     </div>`;
   callAPI();
 }
@@ -332,13 +328,13 @@ async function callAPI(){
   const prompt=buildPrompt();
   const pills=buildPills();
   try{
-    const r = await fetch('/.netlify/functions/rutina', { // URL directa
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ prompt })
+    const r=await fetch('/api/rutina',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({prompt})
     });
     const data=await r.json();
-    if(!r.ok) throw new Error(data.error||'Error desconocido');
+    if(!r.ok) throw new Error(data.error||'Error desconocido de conexión');
     showResult(data.result, pills);
   } catch(e){
     document.getElementById('quiz').innerHTML+=`<p class="error">❌ ${e.message}</p>`;
@@ -346,21 +342,21 @@ async function callAPI(){
 }
 
 function showResult(text,pills){
+  // Convertimos el Markdown de Gemini a HTML si la librería está disponible
+  const formattedText = typeof marked !== 'undefined' ? marked.parse(text) : text;
+
   document.getElementById('quiz').innerHTML=`
     <div class="card">
-      <div class="q-label">Tu diagnóstico Cosmopolita</div>
+      <div class="q-label">Tu Pre-Diagnóstico Cosmopolita</div>
       <div class="profile-pills">${pills.map(p=>`<span class="pill">${p}</span>`).join('')}</div>
-      <div class="result-text" id="rt"></div>
+      <div class="result-text">${formattedText}</div>
     </div>
     <div class="cta-card">
-      <div class="cta-title">¿Lista para dar el siguiente paso?</div>
-      <div class="cta-sub">Agenda una consulta gratuita con nuestra especialista y recibe un protocolo completamente personalizado.</div>
-      <button class="btn-cta" onclick="alert('Aquí va el link de agendamiento de tu clienta')">Agendar mi cita gratuita →</button>
+      <div class="cta-title">Da el siguiente paso hacia tu piel ideal</div>
+      <div class="cta-sub">Agenda una consulta con nuestra especialista para recibir tu protocolo completo y la rutina recomendada en PDF.</div>
+      <a href="https://wa.me/numerodecosmopolita" target="_blank" class="btn-cta">Agendar mi cita ahora →</a>
     </div>
     <button class="restart" onclick="restart()">Volver a hacer el test</button>`;
-  const el=document.getElementById('rt');
-  let i=0;
-  (function type(){if(i<text.length){el.textContent+=text[i++];setTimeout(type,9);}})();
 }
 
 function restart(){
