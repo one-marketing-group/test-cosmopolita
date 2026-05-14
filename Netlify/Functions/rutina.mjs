@@ -10,11 +10,16 @@ export const handler = async (event) => {
   }
 
   try {
-    const { prompt } = JSON.parse(event.body || '{}');
+    const body = JSON.parse(event.body || '{}');
+    const prompt = body.prompt;
     const apiKey = process.env.ANTHROPIC_API_KEY;
 
     if (!apiKey) {
-      return { statusCode: 500, headers, body: JSON.stringify({ error: "La API Key no está configurada en Netlify" }) };
+      return { 
+        statusCode: 500, 
+        headers, 
+        body: JSON.stringify({ error: "API Key no configurada en Netlify" }) 
+      };
     }
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -37,7 +42,7 @@ export const handler = async (event) => {
       return { 
         statusCode: response.status, 
         headers, 
-        body: JSON.stringify({ error: data.error?.message || 'Error de Anthropic' }) 
+        body: JSON.stringify({ error: data.error?.message || 'Error de API' }) 
       };
     }
 
