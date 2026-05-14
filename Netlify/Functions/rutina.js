@@ -33,7 +33,7 @@ export const handler = async (event, context) => {
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-3-5-sonnet-20240620', // Nota: Asegúrate de usar un modelo válido existente
+        model: 'claude-3-haiku-20240307', // Nota: Asegúrate de usar un modelo válido existente
         max_tokens: 1000,
         messages: [{ role: 'user', content: prompt }]
       })
