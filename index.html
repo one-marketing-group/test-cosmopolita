@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Test de Piel · Cosmopolita</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #faf8f6; color: #1a1a1a; font-family: 'DM Sans', sans-serif; min-height: 100vh; display: flex; justify-content: center; padding: 2rem 1rem; }
+
+    .wrap { width: 100%; max-width: 600px; }
+    .header { text-align: center; margin-bottom: 2rem; }
+    .logo { font-family: 'Playfair Display', serif; font-size: 24px; letter-spacing: 0.5px; color: #1a1a1a; }
+    .logo span { font-style: italic; color: #8B6F5E; }
+    .tagline { font-size: 13px; color: #888; margin-top: 4px; }
+
+    .step-indicator { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 2rem; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #ddd; transition: all 0.3s; }
+    .dot.active { background: #8B6F5E; width: 24px; border-radius: 4px; }
+    .dot.done { background: #8B6F5E; opacity: 0.4; }
+
+    .card { background: #fff; border: 0.5px solid #e5e0db; border-radius: 16px; padding: 1.75rem; margin-bottom: 1rem; }
+    .q-label { font-size: 11px; font-weight: 500; color: #8B6F5E; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+    .q-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 600; color: #1a1a1a; margin-bottom: 4px; line-height: 1.3; }
+    .q-hint { font-size: 13px; color: #888; margin-bottom: 1.25rem; }
+
+    .opts-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .opts-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .opt { background: #f7f4f1; border: 0.5px solid #e5e0db; border-radius: 10px; padding: 11px 14px; font-size: 14px; color: #1a1a1a; cursor: pointer; text-align: left; transition: all 0.18s; font-family: 'DM Sans', sans-serif; width: 100%; }
+    .opt:hover { border-color: #8B6F5E; background: #fff; }
+    .opt.sel { border: 1.5px solid #8B6F5E; background: #fff; font-weight: 500; }
+    .opt .desc { font-size: 12px; color: #999; margin-top: 3px; font-weight: 400; }
+
+    .nav { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; }
+    .btn-back { background: none; border: 0.5px solid #ddd; border-radius: 10px; padding: 9px 18px; font-size: 14px; color: #888; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+    .btn-next { background: #8B6F5E; border: none; border-radius: 10px; padding: 10px 26px; font-size: 14px; color: #fff; cursor: pointer; font-weight: 500; font-family: 'DM Sans', sans-serif; opacity: 0.35; pointer-events: none; transition: opacity 0.2s; }
+    .btn-next.on { opacity: 1; pointer-events: all; }
+    .btn-next.on:hover { background: #7a5f4f; }
+
+    /* Loading */
+    .loading { text-align: center; padding: 3rem 1.5rem; }
+    .ld-dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 1.25rem; }
+    .ld-dot { width: 10px; height: 10px; border-radius: 50%; background: #8B6F5E; animation: pulse 1.2s ease-in-out infinite; }
+    .ld-dot:nth-child(2){animation-delay:.2s} .ld-dot:nth-child(3){animation-delay:.4s}
+    @keyframes pulse{0%,80%,100%{opacity:.3;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+    .ld-title { font-family: 'Playfair Display', serif; font-size: 19px; margin-bottom: 6px; }
+    .ld-sub { font-size: 13px; color: #888; }
+
+    /* Result */
+    .profile-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1.25rem; }
+    .pill { font-size: 12px; background: #f3ede9; color: #8B6F5E; padding: 4px 11px; border-radius: 20px; }
+    .result-text { font-size: 15px; color: #1a1a1a; line-height: 1.75; white-space: pre-wrap; }
+
+    .cta-card { background: #f9f5f2; border: 0.5px solid #d4b8a8; border-radius: 16px; padding: 1.75rem; text-align: center; margin-top: 1rem; }
+    .cta-title { font-family: 'Playfair Display', serif; font-size: 18px; margin-bottom: 6px; }
+    .cta-sub { font-size: 13px; color: #888; margin-bottom: 1.25rem; }
+    .btn-cta { background: #8B6F5E; color: #fff; border: none; border-radius: 10px; padding: 12px 30px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+    .btn-cta:hover { background: #7a5f4f; }
+
+    .restart { background: none; border: none; color: #aaa; font-size: 13px; cursor: pointer; text-decoration: underline; display: block; margin: 1.25rem auto 0; font-family: 'DM Sans', sans-serif; }
+    .error { color: #c0392b; font-size: 13px; text-align: center; margin-top: 8px; }
+
+    @media(max-width:480px){ .opts-grid{ grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div class="logo">Cosmo<span>polita</span></div>
+    <div class="tagline">Diagnóstico inteligente de piel</div>
+  </div>
+  <div class="step-indicator" id="dots"></div>
+  <div id="quiz"></div>
+</div>
+
+<script>
+const CONDITIONS = [
+  {id:'1.1',label:'Acné'},
+  {id:'1.2',label:'Manchas'},
+  {id:'1.3',label:'Resequedad'},
+  {id:'1.4',label:'Arrugas'},
+  {id:'1.5',label:'Rosácea'},
+  {id:'1.6',label:'Brillo excesivo'},
+];
+const SUBS = {
+  '1.1':{label:'Acné',opts:[
+    {id:'1.1.1',label:'Acné leve',desc:'Espinillas ocasionales sin inflamación'},
+    {id:'1.1.2',label:'Acné moderado',desc:'Pústulas y zonas afectadas'},
+    {id:'1.1.3',label:'Acné severo',desc:'Quistes, inflamación, cicatrices'},
+    {id:'1.1.4',label:'Acné hormonal o cosmético',desc:'Causas externas'},
+  ]},
+  '1.2':{label:'Manchas',opts:[
+    {id:'1.2.1',label:'Melasma / paño'},
+    {id:'1.2.2',label:'Manchas solares'},
+    {id:'1.2.3',label:'Pecas'},
+    {id:'1.2.4',label:'Manchas post-acné'},
+    {id:'1.2.5',label:'Manchas corporales',desc:'Axilas, cuello, ingles'},
+    {id:'1.2.6',label:'Manchas blancas'},
+  ]},
+  '1.3':{label:'Resequedad',opts:[
+    {id:'1.3.1',label:'Deshidratación'},
+    {id:'1.3.2',label:'Descamación'},
+    {id:'1.3.3',label:'Arrugas asociadas'},
+  ]},
+  '1.4':{label:'Arrugas',opts:[
+    {id:'1.4.1',label:'Líneas de expresión'},
+    {id:'1.4.2',label:'Arrugas profundas'},
+    {id:'1.4.3',label:'Bolsas y ojeras'},
+  ]},
+  '1.5':{label:'Rosácea',opts:[
+    {id:'1.5.1',label:'Rojez en zonas específicas'},
+    {id:'1.5.2',label:'Vasos sanguíneos visibles'},
+    {id:'1.5.3',label:'Ardor y dolor al tacto'},
+  ]},
+  '1.6':{label:'Brillo excesivo',opts:[
+    {id:'1.6.1',label:'Exceso de grasa'},
+    {id:'1.6.2',label:'Poros dilatados'},
+    {id:'1.6.3',label:'Puntos negros'},
+  ]},
+};
+const SKIN=[
+  {id:'2.1',label:'Piel Normal',desc:'Suave, equilibrada, sin zonas grasosas ni resecas. Poros poco visibles.'},
+  {id:'2.2',label:'Piel Grasa',desc:'Pegajosa o aceitosa durante el día. Brillo en zona T, poros dilatados.'},
+  {id:'2.3',label:'Piel Seca',desc:'Tirante, áspera, incómoda. Opaca, con descamación o líneas marcadas.'},
+  {id:'2.4',label:'Piel Mixta',desc:'Grasa en zona T y seca en mejillas. Poros visibles en frente/nariz.'},
+  {id:'2.5',label:'Piel Sensible',desc:'Se irrita fácilmente. Ardor, picazón o enrojecimiento frecuente.'},
+];
+const SOLAR=[
+  {id:'3.1',label:'Poca exposición',desc:'15 a 30 minutos al día'},
+  {id:'3.2',label:'Moderada',desc:'30 min a 1 hora diaria'},
+  {id:'3.3',label:'Alta exposición',desc:'1 a 3 horas al día'},
+  {id:'3.4',label:'Muy alta',desc:'Más de 3 horas al día'},
+];
+const PROT=[
+  {id:'4.1',label:'Nunca',desc:'No uso protector solar'},
+  {id:'4.2',label:'Rara vez',desc:'1–2 veces a la semana'},
+  {id:'4.3',label:'Ocasionalmente',desc:'3–4 veces a la semana'},
+  {id:'4.4',label:'Casi siempre',desc:'5–6 veces a la semana'},
+  {id:'4.5',label:'Siempre',desc:'Todos los días'},
+];
+const PRODUCTS=`
+ACLARADOR: Aclara y unifica tono. Ácido kójico, Ascórbico, Té verde, uva. Para manchas oscuras, melasma, tono desigual. NO en: alergias, brotes activos, embarazo. Uso: Noche.
+TRANEX-K: Melasma y manchas postinflamatorias. Ácido tranexámico, Kójico. NO en: rosácea activa, sin protector, embarazo. Uso: Noche.
+ANTIOX: Tono apagado, antioxidante. Ascórbico, Hialurónico, Alantoína. Para piel deshidratada, primeros signos edad. NO en: acné severo, dermatitis. Uso: Día.
+NIACINAMIDA Y ZINC: Control grasa y brillo. Niacinamida, Zinc. Para grasa/mixta, poros, acné leve-moderado. NO en: rosácea activa, piel muy seca, acné severo. Uso: Día y noche.
+ESPUMA LIMPIADORA: Limpiador antibacteriano. Kójico, Alantoína, Aminoácidos seda. Para manchas leves, tono desigual. NO en: lesiones abiertas. Uso: Día y noche.
+ACNIDERM: Pieles acneicas. Salicílico, Óxido zinc, Azufre, Resorcinol. Para grasa/mixta, acné leve-moderado, puntos negros. NO en: piel sensible/seca. Uso: Noche.
+HIDRAT: Humectante. Alantoína, Té verde, Pantenol. Para sensible/reactiva, mixta/grasa, deshidratación. Uso: Día y noche.
+CONTORNO: Ojeras, bolsas, líneas. CoQ10, Hialurónico, Colágeno, Vit E. Para líneas expresión, ojeras. NO en: inflamación activa. Uso: Día y noche.
+MANDELIC CREMA: Líneas finas, textura. Mandélico, Té verde. Para envejecimiento inicial, pieles sensibles. NO en: rosácea activa, sin protector, embarazo. Uso: Noche 2x semana.
+ANTI-AGE: Signos tempranos. Ascórbico, Hialurónico, Colágeno, Vit E. Para tono apagado, líneas finas. NO en: acné inflamatorio, rosácea en brote. Uso: Día y noche.
+MANDELIC GEL: Acné inflamatorio localizado. Mandélico, Té verde. Para brotes localizados, acné leve-moderado. Uso: Noche 2-3x semana.
+ROSARNIC GEL: Control rosácea. Metronidazol, Árnica. Para rosácea leve-moderada. NO en: rosácea severa. Uso: Noche.
+`;
+
+let s={step:0,conds:[],subs:{},skin:null,solar:null,prot:null,subIdx:0};
+
+function totalSteps(){ return 2 + s.conds.length + 2; }
+function dotStep(){
+  if(s.step===0) return 0;
+  if(s.step===1) return 1+s.subIdx;
+  if(s.step===2) return 1+s.conds.length;
+  if(s.step===3) return 2+s.conds.length;
+  return 3+s.conds.length;
+}
+
+function renderDots(){
+  const el=document.getElementById('dots');
+  const t=totalSteps(), c=dotStep();
+  el.innerHTML=[...Array(t)].map((_,i)=>{
+    let cls='dot';
+    if(i===c) cls+=' active';
+    else if(i<c) cls+=' done';
+    return `<div class="${cls}"></div>`;
+  }).join('');
+}
+
+function opt(o,sel,multi){
+  return `<button class="opt${sel?' sel':''}" onclick="toggle('${o.id}',${multi})">
+    <div>${o.label}</div>${o.desc?`<div class="desc">${o.desc}</div>`:''}
+  </button>`;
+}
+
+function toggle(id,multi){
+  if(s.step===0){
+    if(multi){const i=s.conds.indexOf(id);i>=0?s.conds.splice(i,1):s.conds.push(id);}
+    else s.conds=[id];
+  } else if(s.step===1){
+    const cid=s.conds[s.subIdx];
+    if(!s.subs[cid])s.subs[cid]=[];
+    const a=s.subs[cid],i=a.indexOf(id);
+    i>=0?a.splice(i,1):a.push(id);
+  } else if(s.step===2) s.skin=id;
+  else if(s.step===3) s.solar=id;
+  else if(s.step===4) s.prot=id;
+  render();
+}
+
+function ready(){
+  if(s.step===0) return s.conds.length>0;
+  if(s.step===1) return (s.subs[s.conds[s.subIdx]]||[]).length>0;
+  if(s.step===2) return !!s.skin;
+  if(s.step===3) return !!s.solar;
+  if(s.step===4) return !!s.prot;
+  return false;
+}
+
+function next(){
+  if(!ready()) return;
+  if(s.step===0){s.step=1;s.subIdx=0;}
+  else if(s.step===1){s.subIdx<s.conds.length-1?s.subIdx++:s.step=2;}
+  else if(s.step===2) s.step=3;
+  else if(s.step===3) s.step=4;
+  else if(s.step===4){showLoading();return;}
+  render();
+}
+
+function back(){
+  if(s.step===0) return;
+  if(s.step===1){s.subIdx>0?s.subIdx--:(s.step=0);}
+  else if(s.step===2){s.step=1;s.subIdx=s.conds.length-1;}
+  else s.step--;
+  render();
+}
+
+function render(){
+  renderDots();
+  const q=document.getElementById('quiz');
+  const total=totalSteps();
+
+  if(s.step===0){
+    q.innerHTML=`<div class="card">
+      <div class="q-label">Paso 1 de ${total}</div>
+      <div class="q-title">¿Qué aspecto de tu piel quieres tratar?</div>
+      <div class="q-hint">Puedes seleccionar varias opciones</div>
+      <div class="opts-grid">${CONDITIONS.map(c=>opt(c,s.conds.includes(c.id),true)).join('')}</div>
+      <div class="nav"><span></span><button class="btn-next${ready()?' on':''}" onclick="next()">Continuar →</button></div>
+    </div>`;
+  } else if(s.step===1){
+    const cid=s.conds[s.subIdx], sub=SUBS[cid], sel=s.subs[cid]||[];
+    q.innerHTML=`<div class="card">
+      <div class="q-label">Paso ${1+s.subIdx+1} de ${total} · ${sub.label}</div>
+      <div class="q-title">¿Cómo se manifiesta tu ${sub.label.toLowerCase()}?</div>
+      <div class="q-hint">Selecciona las que apliquen</div>
+      <div class="opts-list">${sub.opts.map(o=>opt(o,sel.includes(o.id),true)).join('')}</div>
+      <div class="nav"><button class="btn-back" onclick="back()">← Atrás</button><button class="btn-next${ready()?' on':''}" onclick="next()">Continuar →</button></div>
+    </div>`;
+  } else if(s.step===2){
+    q.innerHTML=`<div class="card">
+      <div class="q-label">Paso ${1+s.conds.length+1} de ${total}</div>
+      <div class="q-title">¿Cómo describirías la apariencia de tu piel?</div>
+      <div class="q-hint">Selecciona solo una opción</div>
+      <div class="opts-list">${SKIN.map(o=>opt(o,s.skin===o.id,false)).join('')}</div>
+      <div class="nav"><button class="btn-back" onclick="back()">← Atrás</button><button class="btn-next${ready()?' on':''}" onclick="next()">Continuar →</button></div>
+    </div>`;
+  } else if(s.step===3){
+    q.innerHTML=`<div class="card">
+      <div class="q-label">Paso ${2+s.conds.length+1} de ${total}</div>
+      <div class="q-title">¿Cuál es tu exposición solar diaria?</div>
+      <div class="q-hint">Selecciona solo una opción</div>
+      <div class="opts-list">${SOLAR.map(o=>opt(o,s.solar===o.id,false)).join('')}</div>
+      <div class="nav"><button class="btn-back" onclick="back()">← Atrás</button><button class="btn-next${ready()?' on':''}" onclick="next()">Continuar →</button></div>
+    </div>`;
+  } else if(s.step===4){
+    q.innerHTML=`<div class="card">
+      <div class="q-label">Paso ${3+s.conds.length+1} de ${total}</div>
+      <div class="q-title">¿Con qué frecuencia usas protector solar?</div>
+      <div class="q-hint">Selecciona solo una opción</div>
+      <div class="opts-list">${PROT.map(o=>opt(o,s.prot===o.id,false)).join('')}</div>
+      <div class="nav"><button class="btn-back" onclick="back()">← Atrás</button><button class="btn-next${ready()?' on':''}" onclick="next()">Ver mi rutina →</button></div>
+    </div>`;
+  }
+}
+
+function buildPrompt(){
+  const cLabels=s.conds.map(id=>CONDITIONS.find(x=>x.id===id)?.label||id);
+  let sub='';
+  for(const cid of s.conds){
+    const sel=s.subs[cid]||[];
+    if(sel.length){
+      const names=sel.map(sid=>SUBS[cid]?.opts.find(o=>o.id===sid)?.label||sid);
+      sub+=`\n- ${SUBS[cid].label}: ${names.join(', ')}`;
+    }
+  }
+  const skinL=SKIN.find(x=>x.id===s.skin)?.label||s.skin;
+  const solL=SOLAR.find(x=>x.id===s.solar)?.label||s.solar;
+  const protL=PROT.find(x=>x.id===s.prot)?.label||s.prot;
+
+  return `Toma el rol de una profesional bioquímica farmacéutica, experta en tratamiento de piel. Trabajas para Cosmopolita.
+
+Test de piel de la clienta:
+CONDICIONES: ${cLabels.join(', ')}
+DETALLE:${sub}
+TIPO DE PIEL: ${skinL}
+EXPOSICIÓN SOLAR: ${solL}
+PROTECTOR SOLAR: ${protL}
+
+CATÁLOGO PRODUCTOS COSMOPOLITA:
+${PRODUCTS}
+
+Redacta una rutina personalizada dividida en RUTINA DE MAÑANA y RUTINA DE NOCHE, usando solo productos del catálogo. Respeta las restricciones de cada producto. Al final, invita emocionalmente a agendar una cita con la especialista para un protocolo más profundo. Tono cálido, empático y profesional. Máximo 300 palabras. Usa saltos de párrafo claros entre mañana, noche y la invitación final.`;
+}
+
+function buildPills(){
+  const pills=[];
+  s.conds.forEach(id=>{
+    pills.push(CONDITIONS.find(x=>x.id===id)?.label||id);
+    (s.subs[id]||[]).forEach(sid=>{
+      const l=SUBS[id]?.opts.find(o=>o.id===sid)?.label;
+      if(l) pills.push(l);
+    });
+  });
+  const sk=SKIN.find(x=>x.id===s.skin);
+  if(sk) pills.push(sk.label);
+  return pills;
+}
+
+function showLoading(){
+  document.getElementById('dots').innerHTML='';
+  document.getElementById('quiz').innerHTML=`
+    <div class="card loading">
+      <div class="ld-dots"><div class="ld-dot"></div><div class="ld-dot"></div><div class="ld-dot"></div></div>
+      <div class="ld-title">Analizando tu piel...</div>
+      <div class="ld-sub">Preparando tu rutina personalizada con IA</div>
+    </div>`;
+  callAPI();
+}
+
+async function callAPI(){
+  const prompt=buildPrompt();
+  const pills=buildPills();
+  try{
+    const r=await fetch('/api/rutina',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({prompt})
+    });
+    const data=await r.json();
+    if(!r.ok) throw new Error(data.error||'Error desconocido');
+    showResult(data.result, pills);
+  } catch(e){
+    document.getElementById('quiz').innerHTML+=`<p class="error">❌ ${e.message}</p>`;
+  }
+}
+
+function showResult(text,pills){
+  document.getElementById('quiz').innerHTML=`
+    <div class="card">
+      <div class="q-label">Tu diagnóstico Cosmopolita</div>
+      <div class="profile-pills">${pills.map(p=>`<span class="pill">${p}</span>`).join('')}</div>
+      <div class="result-text" id="rt"></div>
+    </div>
+    <div class="cta-card">
+      <div class="cta-title">¿Lista para dar el siguiente paso?</div>
+      <div class="cta-sub">Agenda una consulta gratuita con nuestra especialista y recibe un protocolo completamente personalizado.</div>
+      <button class="btn-cta" onclick="alert('Aquí va el link de agendamiento de tu clienta')">Agendar mi cita gratuita →</button>
+    </div>
+    <button class="restart" onclick="restart()">Volver a hacer el test</button>`;
+  const el=document.getElementById('rt');
+  let i=0;
+  (function type(){if(i<text.length){el.textContent+=text[i++];setTimeout(type,9);}})();
+}
+
+function restart(){
+  s={step:0,conds:[],subs:{},skin:null,solar:null,prot:null,subIdx:0};
+  render();
+}
+
+render();
+</script>
+</body>
+</html>

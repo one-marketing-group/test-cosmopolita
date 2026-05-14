@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "api/rutina.js", "use": "@vercel/node" }
+  ],
+  "routes": [
+    { "src": "/api/rutina", "dest": "/api/rutina.js" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
+}
