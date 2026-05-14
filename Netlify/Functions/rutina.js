@@ -1,6 +1,4 @@
-const fetch = require('node-fetch'); // Netlify ya incluye fetch en entornos modernos, pero esto asegura compatibilidad
-
-exports.handler = async (event, context) => {
+export const handler = async (event) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -14,6 +12,10 @@ exports.handler = async (event, context) => {
   try {
     const { prompt } = JSON.parse(event.body || '{}');
     const apiKey = process.env.ANTHROPIC_API_KEY;
+
+    if (!apiKey) {
+      return { statusCode: 500, headers, body: JSON.stringify({ error: "La API Key no está configurada en Netlify" }) };
+    }
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -31,16 +33,25 @@ exports.handler = async (event, context) => {
 
     const data = await response.json();
 
+    if (!response.ok) {
+      return { 
+        statusCode: response.status, 
+        headers, 
+        body: JSON.stringify({ error: data.error?.message || 'Error de Anthropic' }) 
+      };
+    }
+
     return {
-      statusCode: response.ok ? 200 : response.status,
+      statusCode: 200,
       headers,
-      body: JSON.stringify(response.ok ? { result: data.content[0].text } : { error: data.error })
+      body: JSON.stringify({ result: data.content[0].text })
     };
+
   } catch (err) {
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: err.message })
+      body: JSON.stringify({ error: "Error interno: " + err.message })
     };
   }
 };
