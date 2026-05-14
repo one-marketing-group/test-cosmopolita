@@ -1,0 +1,14 @@
+# Indica a Netlify dónde buscar las funciones (servidor)
+[functions]
+  directory = "netlify/functions"
+
+# Configura el redireccionamiento para que tu frontend 
+# llame a /api/rutina y funcione correctamente
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+# Opcional: Asegura que el despliegue use el directorio raíz para el contenido estático
+[build]
+  publish = "."
