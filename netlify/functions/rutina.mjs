@@ -23,7 +23,7 @@ export const handler = async (event) => {
     }
 
     // Llamada directa a la API REST de Gemini 1.5 Flash (Gratuita y rápida)
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
