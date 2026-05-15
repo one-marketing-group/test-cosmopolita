@@ -3,88 +3,554 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Test de Piel · Cosmopolita</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <title>Test de Piel · Cosmopolita Spa &amp; Dermocosmética</title>
+  <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #faf8f6; color: #1a1a1a; font-family: 'DM Sans', sans-serif; min-height: 100vh; display: flex; justify-content: center; padding: 2rem 1rem; }
 
-    .wrap { width: 100%; max-width: 600px; }
-    .header { text-align: center; margin-bottom: 2rem; }
-    .logo { font-family: 'Playfair Display', serif; font-size: 24px; letter-spacing: 0.5px; color: #1a1a1a; }
-    .logo span { font-style: italic; color: #8B6F5E; }
-    .tagline { font-size: 13px; color: #888; margin-top: 4px; }
+    :root {
+      --pink:      #fce8e4;
+      --pink-soft: #fdf3f0;
+      --pink-deep: #e8a89f;
+      --ink:       #4D4C4C;
+      --ink-soft:  #7a7878;
+      --line:      #ececec;
+      --white:     #ffffff;
+    }
 
-    .step-indicator { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 2rem; }
-    .dot { width: 8px; height: 8px; border-radius: 50%; background: #ddd; transition: all 0.3s; }
-    .dot.active { background: #8B6F5E; width: 24px; border-radius: 4px; }
-    .dot.done { background: #8B6F5E; opacity: 0.4; }
+    @keyframes bgShift {
+      0%   { background-position: 0% 0%, 100% 100%, 0% 50%; }
+      50%  { background-position: 60% 40%, 20% 60%, 100% 50%; }
+      100% { background-position: 0% 0%, 100% 100%, 0% 50%; }
+    }
+    @keyframes twinkle {
+      0%,100% { opacity: 0; transform: scale(0.3) rotate(0deg); }
+      50%     { opacity: 1; transform: scale(1) rotate(180deg); }
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(24px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes fadeImg {
+      from { opacity: 0; transform: scale(1.04); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    @keyframes bloom {
+      from { opacity: 0; transform: translateY(-50%) scale(0.4) rotate(-90deg); }
+      to   { opacity: 0.85; transform: translateY(-50%) scale(1) rotate(0deg); }
+    }
+    @keyframes pulse {
+      0%,80%,100% { opacity:.3; transform:scale(.8); }
+      40%         { opacity:1;  transform:scale(1); }
+    }
 
-    .card { background: #fff; border: 0.5px solid #e5e0db; border-radius: 16px; padding: 1.75rem; margin-bottom: 1rem; }
-    .q-label { font-size: 11px; font-weight: 500; color: #8B6F5E; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
-    .q-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 600; color: #1a1a1a; margin-bottom: 4px; line-height: 1.3; }
-    .q-hint { font-size: 13px; color: #888; margin-bottom: 1.25rem; }
+    /* ===== Body & sparkle bg ===== */
+    body {
+      color: var(--ink);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0;
+      background:
+        radial-gradient(ellipse at 10% 10%, #fce8e4 0%, transparent 50%),
+        radial-gradient(ellipse at 88% 88%, #fdf0ec 0%, transparent 55%),
+        linear-gradient(160deg, #ffffff 0%, #fdf5f3 45%, #fce9e6 80%, #ffffff 100%);
+      background-size: 200% 200%, 200% 200%, 100% 100%;
+      animation: bgShift 26s ease-in-out infinite;
+      position: relative;
+      overflow-x: hidden;
+    }
 
-    .opts-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-    .opts-list { display: flex; flex-direction: column; gap: 8px; }
+    /* sparkles */
+    #sparkle-wrap { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+    .sp {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.95);
+      animation: twinkle var(--dur,4s) var(--delay,0s) ease-in-out infinite;
+      opacity: 0;
+      box-shadow: 0 0 4px rgba(255,255,255,0.8);
+    }
 
-    .opt { background: #f7f4f1; border: 0.5px solid #e5e0db; border-radius: 10px; padding: 11px 14px; font-size: 14px; color: #1a1a1a; cursor: pointer; text-align: left; transition: all 0.18s; font-family: 'DM Sans', sans-serif; width: 100%; }
-    .opt:hover { border-color: #8B6F5E; background: #fff; }
-    .opt.sel { border: 1.5px solid #8B6F5E; background: #fff; font-weight: 500; }
-    .opt .desc { font-size: 12px; color: #999; margin-top: 3px; font-weight: 400; }
+    /* ===== Layout ===== */
+    .wrap { width: 100%; max-width: 760px; flex: 1; position: relative; z-index: 1; padding: 1.5rem 1rem 3rem; }
 
-    .nav { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; }
-    .btn-back { background: none; border: 0.5px solid #ddd; border-radius: 10px; padding: 9px 18px; font-size: 14px; color: #888; cursor: pointer; font-family: 'DM Sans', sans-serif; }
-    .btn-next { background: #8B6F5E; border: none; border-radius: 10px; padding: 10px 26px; font-size: 14px; color: #fff; cursor: pointer; font-weight: 500; font-family: 'DM Sans', sans-serif; opacity: 0.35; pointer-events: none; transition: opacity 0.2s; }
-    .btn-next.on { opacity: 1; pointer-events: all; }
-    .btn-next.on:hover { background: #7a5f4f; }
+    /* ===== Header ===== */
+    .header {
+      position: sticky; top: 12px; z-index: 50;
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+      padding: 0.85rem 1.2rem;
+      background: rgba(255,255,255,0.62);
+      backdrop-filter: blur(18px) saturate(140%);
+      -webkit-backdrop-filter: blur(18px) saturate(140%);
+      border: 1px solid rgba(255,255,255,0.7);
+      border-radius: 20px;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 8px 32px -12px rgba(232,168,159,0.35), inset 0 1px 0 rgba(255,255,255,0.7);
+    }
+    .brand { display:flex; align-items:center; gap:12px; }
+    .brand-mark {
+      width:40px; height:40px; border-radius:12px;
+      background: linear-gradient(135deg, var(--pink) 0%, var(--pink-deep) 100%);
+      display:flex; align-items:center; justify-content:center;
+      color:#fff;
+      box-shadow: 0 4px 12px -4px rgba(232,168,159,0.7);
+    }
+    .brand-name {
+      font-family: 'Ubuntu', sans-serif;
+      font-size: 20px; font-weight: 500; color: var(--ink); letter-spacing: 0.2px;
+    }
+    .brand-name em { font-style:italic; color:var(--pink-deep); }
+    .btn-back-site {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px; font-weight: 500;
+      color: var(--ink-soft); background: var(--pink-soft);
+      border: 1px solid var(--pink-deep); border-radius: 20px;
+      padding: 7px 16px; cursor:pointer; text-decoration:none;
+      display: inline-flex; align-items:center; gap:6px;
+      transition: all .2s; white-space:nowrap;
+    }
+    .btn-back-site:hover { background: var(--pink); color: var(--ink); }
 
-    /* Loading */
-    .loading { text-align: center; padding: 3rem 1.5rem; }
-    .ld-dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 1.25rem; }
-    .ld-dot { width: 10px; height: 10px; border-radius: 50%; background: #8B6F5E; animation: pulse 1.2s ease-in-out infinite; }
+    /* ===== Timeline ===== */
+    .step-indicator {
+      display:flex; align-items:center; justify-content:center;
+      margin: 0.5rem 0 1.75rem; flex-wrap:wrap; padding: 0 0.5rem;
+    }
+    .tl-item { display:flex; align-items:center; }
+    .tl-num {
+      width:28px; height:28px; border-radius:50%;
+      background: rgba(255,255,255,0.7); color:var(--ink-soft);
+      display:flex; align-items:center; justify-content:center;
+      font-size:12px; font-weight:600;
+      transition: all .3s cubic-bezier(.4,0,.2,1);
+      border: 1px solid var(--line);
+    }
+    .tl-num.active { background:var(--ink); color:#fff; transform:scale(1.12); box-shadow:0 4px 14px rgba(77,76,76,.3); border-color:var(--ink); }
+    .tl-num.done   { background:var(--pink); color:var(--ink); border-color:var(--pink); }
+    .tl-bar { width:22px; height:2px; background:var(--line); transition:background .3s; }
+    .tl-bar.done { background:var(--pink); }
+
+    /* ===== Card ===== */
+    .card {
+      background: rgba(255,255,255,0.88);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.75);
+      border-radius: 22px;
+      padding: 1.75rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 10px 40px -20px rgba(77,76,76,.18);
+      animation: slideIn .45s cubic-bezier(.22,.9,.32,1);
+    }
+
+    /* ===== Card with side image (single-select steps) ===== */
+    .card-with-image {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 1.5rem;
+      align-items: stretch;
+    }
+    .card-side-image {
+      border-radius: 16px; overflow:hidden;
+      background: var(--pink-soft); min-height: 300px;
+      box-shadow: 0 8px 24px -12px rgba(232,168,159,.45);
+      flex-shrink: 0;
+    }
+    .card-side-image img { width:100%; height:100%; object-fit:cover; display:block; animation: fadeImg .5s ease; }
+
+    /* ===== Gallery layout (multi-select sub-questions) ===== */
+    .card-gallery-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+      align-items: start;
+    }
+    .gallery-panel {
+      border-radius: 16px; overflow:hidden;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+      background: var(--pink-soft);
+      min-height: 280px;
+    }
+    .gallery-panel.g1 { grid-template-columns: 1fr; }
+    .gallery-panel.g3 .gi:first-child { grid-column: 1/-1; }
+    .gallery-panel.g4 { grid-template-columns: 1fr 1fr; }
+    .gi { overflow:hidden; background:var(--pink-soft); aspect-ratio:1/1; }
+    .gi img { width:100%; height:100%; object-fit:cover; display:block; animation:fadeImg .4s ease; }
+    .gallery-placeholder {
+      border-radius:16px; background:var(--pink-soft);
+      min-height:280px; display:flex; align-items:center; justify-content:center;
+    }
+    .gallery-placeholder svg { opacity:.35; }
+
+    @media(max-width:640px){
+      .card-with-image    { grid-template-columns: 1fr; }
+      .card-side-image    { min-height:190px; max-height:230px; }
+      .card-gallery-layout{ grid-template-columns: 1fr; }
+      .gallery-panel      { min-height:180px; }
+    }
+
+    /* ===== Question labels ===== */
+    .q-label { font-size:11px; font-weight:600; color:var(--pink-deep); letter-spacing:1.4px; text-transform:uppercase; margin-bottom:10px; }
+    .q-title {
+      font-family: 'Ubuntu', sans-serif;
+      font-size:22px; font-weight:500; color:var(--ink); margin-bottom:6px; line-height:1.3;
+    }
+    .q-hint { font-size:13px; color:var(--ink-soft); margin-bottom:1.25rem; line-height:1.5; }
+
+    .opts-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+    .opts-list  { display:flex; flex-direction:column; gap:10px; }
+
+    /* ===== Option buttons ===== */
+    .opt {
+      position:relative;
+      background: rgba(255,255,255,0.6);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 13px 40px 13px 16px;
+      font-size:14px; color:var(--ink);
+      cursor:pointer; text-align:left;
+      transition: all .22s cubic-bezier(.4,0,.2,1);
+      font-family:'DM Sans',sans-serif; width:100%;
+    }
+    .opt:hover { border-color:var(--pink-deep); background:var(--white); transform:translateY(-1px); }
+    .opt.sel {
+      border:1.5px solid var(--pink-deep);
+      background: linear-gradient(135deg, var(--pink-soft) 0%, #fdf3f0 100%);
+      font-weight:500;
+      box-shadow: 0 4px 14px -6px rgba(232,168,159,.55);
+    }
+    .opt.sel::after {
+      content:'✦';
+      position:absolute; top:50%; right:14px;
+      transform:translateY(-50%);
+      color:var(--pink-deep); font-size:14px;
+      animation: bloom .35s cubic-bezier(.34,1.56,.64,1);
+    }
+    .opt .desc { font-size:12px; color:var(--ink-soft); margin-top:3px; font-weight:400; }
+
+    /* ===== Nav ===== */
+    .nav { display:flex; justify-content:space-between; align-items:center; margin-top:1.5rem; }
+    .btn-back {
+      background:none; border:1px solid var(--line); border-radius:12px;
+      padding:10px 20px; font-size:14px; color:var(--ink-soft);
+      cursor:pointer; font-family:'DM Sans',sans-serif; transition:all .2s;
+    }
+    .btn-back:hover { color:var(--ink); border-color:var(--ink); }
+    .btn-next {
+      background:var(--ink); border:none; border-radius:12px;
+      padding:12px 28px; font-size:14px; color:#fff;
+      cursor:pointer; font-weight:500; font-family:'DM Sans',sans-serif;
+      opacity:.35; pointer-events:none; transition:all .25s;
+      box-shadow:0 6px 18px -6px rgba(77,76,76,.35);
+    }
+    .btn-next.on { opacity:1; pointer-events:all; }
+    .btn-next.on:hover { transform:translateY(-2px); box-shadow:0 10px 22px -8px rgba(77,76,76,.45); }
+
+    /* ===== Welcome screen ===== */
+    .welcome-eyebrow {
+      display:inline-flex; align-items:center; gap:8px;
+      font-size:11px; font-weight:600; color:var(--pink-deep);
+      letter-spacing:1.6px; text-transform:uppercase;
+      background:var(--pink-soft); padding:6px 14px; border-radius:999px;
+      margin-bottom:18px;
+    }
+    .welcome-title {
+      font-family: 'Ubuntu', sans-serif;
+      font-size:32px; line-height:1.18; font-weight:500;
+      color:var(--ink); margin-bottom:12px;
+    }
+    .welcome-title em { font-style:italic; color:var(--pink-deep); }
+    .welcome-sub { font-size:14.5px; color:var(--ink-soft); line-height:1.65; margin-bottom:1.75rem; max-width:540px; }
+    .feature-list { list-style:none; padding:0; margin:0 0 1.75rem; display:flex; flex-direction:column; gap:14px; }
+    .feature-item { display:flex; gap:14px; align-items:flex-start; font-size:14px; color:var(--ink); }
+    .feature-icon {
+      flex-shrink:0; width:36px; height:36px; border-radius:10px;
+      background:var(--pink-soft); display:flex; align-items:center; justify-content:center; color:var(--ink);
+    }
+    .feature-icon svg { width:18px; height:18px; }
+    .feature-text strong { font-weight:600; color:var(--ink); }
+    .feature-text span { color:var(--ink-soft); font-size:13px; display:block; margin-top:2px; }
+
+    /* ===== Loading ===== */
+    .loading { text-align:center; padding:3rem 1.5rem; }
+    .ld-dots { display:flex; justify-content:center; gap:8px; margin-bottom:1.25rem; }
+    .ld-dot { width:10px; height:10px; border-radius:50%; background:var(--pink-deep); animation:pulse 1.2s ease-in-out infinite; }
     .ld-dot:nth-child(2){animation-delay:.2s} .ld-dot:nth-child(3){animation-delay:.4s}
-    @keyframes pulse{0%,80%,100%{opacity:.3;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
-    .ld-title { font-family: 'Playfair Display', serif; font-size: 19px; margin-bottom: 6px; }
-    .ld-sub { font-size: 13px; color: #888; }
+    .ld-title { font-family:'Ubuntu',sans-serif; font-size:19px; margin-bottom:6px; color:var(--ink); font-weight:500; }
+    .ld-sub { font-size:13px; color:var(--ink-soft); }
 
-    /* Result */
-    .profile-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1.25rem; }
-    .pill { font-size: 12px; background: #f3ede9; color: #8B6F5E; padding: 4px 11px; border-radius: 20px; }
-    
-    /* Mejorado para Markdown de Gemini */
-    .result-text { font-size: 15px; color: #1a1a1a; line-height: 1.75; }
-    .result-text p { margin-bottom: 1rem; }
-    .result-text ul { margin-left: 1.5rem; margin-bottom: 1rem; }
-    .result-text li { margin-bottom: 0.5rem; }
-    .result-text strong { font-weight: 600; color: #8B6F5E; }
+    /* ===== Result ===== */
+    .profile-pills { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:1.25rem; }
+    .pill { font-size:12px; background:var(--pink-soft); color:var(--ink); padding:5px 12px; border-radius:20px; }
+    .result-text { font-size:15px; color:var(--ink); line-height:1.75; white-space:pre-wrap; word-wrap:break-word; }
 
-    .cta-card { background: #f9f5f2; border: 0.5px solid #d4b8a8; border-radius: 16px; padding: 1.75rem; text-align: center; margin-top: 1rem; }
-    .cta-title { font-family: 'Playfair Display', serif; font-size: 18px; margin-bottom: 6px; }
-    .cta-sub { font-size: 13px; color: #888; margin-bottom: 1.25rem; }
-    .btn-cta { background: #8B6F5E; color: #fff; border: none; border-radius: 10px; padding: 12px 30px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; text-decoration: none; display: inline-block;}
-    .btn-cta:hover { background: #7a5f4f; }
+    /* ===== CTA card ===== */
+    .cta-card {
+      background: linear-gradient(160deg, var(--pink-soft), var(--white));
+      border:1px solid var(--pink); border-radius:20px;
+      padding:1.75rem; text-align:center; margin-top:1rem;
+    }
+    .cta-title { font-family:'Ubuntu',sans-serif; font-size:20px; margin-bottom:6px; color:var(--ink); font-weight:500; }
+    .cta-sub { font-size:13px; color:var(--ink-soft); margin-bottom:1.25rem; line-height:1.6; }
+    .name-input {
+      width:100%; padding:13px 16px;
+      border:1px solid var(--line); border-radius:12px;
+      font-size:14px; font-family:'DM Sans',sans-serif; color:var(--ink);
+      background:#fff; margin-bottom:12px; outline:none;
+      transition:border-color .2s, box-shadow .2s;
+    }
+    .name-input:focus { border-color:var(--pink-deep); box-shadow:0 0 0 4px rgba(232,168,159,.2); }
+    .btn-cta {
+      background:var(--ink); color:#fff; border:none; border-radius:12px;
+      padding:13px 22px; font-size:14px; font-weight:500;
+      cursor:pointer; font-family:'DM Sans',sans-serif;
+      text-decoration:none; display:inline-block; width:100%;
+      transition:transform .2s, box-shadow .2s;
+      box-shadow:0 6px 18px -6px rgba(77,76,76,.35);
+    }
+    .btn-cta:hover { transform:translateY(-2px); }
+    .btn-cta.secondary {
+      background:#fff; color:var(--ink);
+      border:1px solid var(--ink); margin-top:8px; box-shadow:none;
+    }
+    .notice {
+      background:var(--pink-soft); border:1px solid var(--pink);
+      border-radius:12px; padding:12px 14px;
+      font-size:13px; color:var(--ink); margin:10px 0;
+      text-align:left; line-height:1.55;
+    }
+    .restart { background:none; border:none; color:var(--ink-soft); font-size:13px; cursor:pointer; text-decoration:underline; display:block; margin:1.25rem auto 0; font-family:'DM Sans',sans-serif; }
+    .error { color:#c0392b; font-size:13px; text-align:center; margin-top:8px; }
 
-    .restart { background: none; border: none; color: #aaa; font-size: 13px; cursor: pointer; text-decoration: underline; display: block; margin: 1.25rem auto 0; font-family: 'DM Sans', sans-serif; }
-    .error { color: #c0392b; font-size: 13px; text-align: center; margin-top: 8px; }
+    /* ===== Footer ===== */
+    footer {
+      width:100%; background:rgba(255,255,255,0.7);
+      backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+      border-top:1px solid var(--pink);
+      padding:2.5rem 1.5rem 1.5rem;
+      font-family:'DM Sans',sans-serif;
+      position:relative; z-index:1;
+    }
+    .footer-grid {
+      max-width:760px; margin:0 auto;
+      display:grid; grid-template-columns:1.2fr 1fr 1fr 0.8fr;
+      gap:2rem;
+    }
+    .footer-brand { font-family:'Ubuntu',sans-serif; font-size:17px; font-weight:500; color:var(--ink); margin-bottom:6px; }
+    .footer-brand em { font-style:italic; color:var(--pink-deep); }
+    .footer-tagline { font-size:12px; color:var(--ink-soft); line-height:1.6; margin-bottom:14px; }
+    .footer-schedule { font-size:12px; color:var(--ink-soft); line-height:1.8; }
+    .footer-col-title { font-size:10px; font-weight:600; color:var(--pink-deep); letter-spacing:1.2px; text-transform:uppercase; margin-bottom:12px; }
+    .footer-links { list-style:none; display:flex; flex-direction:column; gap:8px; }
+    .footer-links a { font-size:13px; color:var(--ink-soft); text-decoration:none; transition:color .2s; line-height:1.5; }
+    .footer-links a:hover { color:var(--ink); }
+    .footer-social { display:flex; flex-direction:column; gap:8px; }
+    .footer-social a { font-size:13px; color:var(--ink-soft); text-decoration:none; display:flex; align-items:center; gap:7px; transition:color .2s; }
+    .footer-social a:hover { color:var(--ink); }
+    .footer-bottom {
+      max-width:760px; margin:2rem auto 0;
+      padding-top:1rem; border-top:1px solid var(--line);
+      display:flex; align-items:center; justify-content:space-between;
+      flex-wrap:wrap; gap:8px;
+    }
+    .footer-copy { font-size:11.5px; color:var(--ink-soft); line-height:1.6; }
+    .footer-copy a { color:var(--pink-deep); text-decoration:none; font-weight:500; }
+    .footer-legal-links { display:flex; gap:16px; }
+    .footer-legal-links a { font-size:11.5px; color:var(--ink-soft); text-decoration:none; }
+    .footer-legal-links a:hover { text-decoration:underline; }
 
-    @media(max-width:480px){ .opts-grid{ grid-template-columns: 1fr; } }
+    /* ===== Modals ===== */
+    .modal-overlay {
+      display:none; position:fixed; inset:0; z-index:200;
+      background:rgba(61,53,53,.45); backdrop-filter:blur(6px);
+      align-items:center; justify-content:center; padding:1rem;
+    }
+    .modal-overlay.open { display:flex; }
+    .modal-box {
+      background:#fff; border-radius:22px; padding:2rem;
+      max-width:520px; width:100%; max-height:80vh; overflow-y:auto;
+      position:relative;
+      box-shadow:0 24px 64px -16px rgba(61,53,53,.25);
+      animation:slideIn .35s cubic-bezier(.22,.9,.32,1);
+    }
+    .modal-title { font-family:'Ubuntu',sans-serif; font-size:20px; font-weight:500; color:var(--ink); margin-bottom:1rem; }
+    .modal-body { font-size:13.5px; color:var(--ink-soft); line-height:1.75; }
+    .modal-body p { margin-bottom:.85rem; }
+    .modal-close {
+      position:absolute; top:1rem; right:1rem;
+      background:var(--pink-soft); border:none; border-radius:50%;
+      width:30px; height:30px; cursor:pointer;
+      font-size:15px; color:var(--ink);
+      display:flex; align-items:center; justify-content:center;
+    }
+
+    @media(max-width:640px){
+      .opts-grid { grid-template-columns:1fr; }
+      .footer-grid { grid-template-columns:1fr 1fr; gap:1.5rem; }
+      .footer-bottom { flex-direction:column; align-items:flex-start; }
+      .welcome-title { font-size:26px; }
+    }
+    @media(max-width:400px){
+      .footer-grid { grid-template-columns:1fr; }
+    }
   </style>
-  <!-- Marcador para convertir Markdown de Gemini a HTML (Opcional pero recomendado) -->
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
+
+<!-- Sparkles -->
+<div id="sparkle-wrap"></div>
+
 <div class="wrap">
+
+  <!-- HEADER -->
   <div class="header">
-    <div class="logo">Cosmo<span>polita</span></div>
-    <div class="tagline">Pre-Diagnóstico Inteligente</div>
+    <div class="brand">
+      <div class="brand-mark">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c1.8 2.2 1.8 4.5 0 6.7-1.8-2.2-1.8-4.5 0-6.7zM12 22c-1.8-2.2-1.8-4.5 0-6.7 1.8 2.2 1.8 4.5 0 6.7zM2 12c2.2-1.8 4.5-1.8 6.7 0-2.2 1.8-4.5 1.8-6.7 0zM22 12c-2.2 1.8-4.5 1.8-6.7 0 2.2-1.8 4.5-1.8 6.7 0z"/><circle cx="12" cy="12" r="2.2"/></svg>
+      </div>
+      <div class="brand-name">Cosmo<em>polita</em></div>
+    </div>
+    <a href="https://cosmopolitaderma.com/" class="btn-back-site" target="_blank">
+      ← Regresar a Cosmopolita
+    </a>
   </div>
+
   <div class="step-indicator" id="dots"></div>
   <div id="quiz"></div>
+
+</div><!-- /wrap -->
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <div class="footer-brand">Cosmo<em>polita</em></div>
+      <div class="footer-tagline">Spa &amp; Dermocosmética<br>Cuidamos tu piel con ciencia y delicadeza.</div>
+      <div class="footer-schedule">
+        <strong style="font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--pink-deep);">Horarios</strong><br>
+        Lun – Vie: 8:00–13:00 · 14:30–18:30<br>
+        Sábado: 8:30–13:00
+      </div>
+    </div>
+
+    <div>
+      <div class="footer-col-title">Contáctanos</div>
+      <ul class="footer-links">
+        <li><a href="tel:0999055777">📞 099 905 5777</a></li>
+        <li><a href="mailto:cosmopolitaec@gmail.com">✉️ cosmopolitaec@gmail.com</a></li>
+        <li><a href="https://maps.app.goo.gl/Z5iWG1RGFrTdtnas8" target="_blank">📍 18 de Noviembre 04-38 y Cristóbal Padilla, Cariamanga – Loja – Ecuador</a></li>
+        <li style="margin-top:4px;"><a href="https://wa.me/593999055777" target="_blank" style="color:var(--pink-deep);font-weight:500;">💬 WhatsApp</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <div class="footer-col-title">Síguenos</div>
+      <div class="footer-social">
+        <a href="#" target="_blank">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+          Instagram
+        </a>
+        <a href="#" target="_blank">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+          Facebook
+        </a>
+        <a href="#" target="_blank">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.95C5.12 20 12 20 12 20s6.88 0 8.59-.47a2.78 2.78 0 0 0 1.95-1.95A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02"/></svg>
+          YouTube
+        </a>
+        <a href="#" target="_blank">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12 C8 8.13 11.13 5 15 5 C18.87 5 22 8.13 22 12 C22 15.87 18.87 19 15 19 L8 22 L8 19 C5.24 18.07 3 15.27 3 12 C3 8.73 5.24 5.93 8 5 Z"/></svg>
+          TikTok
+        </a>
+      </div>
+    </div>
+
+    <div>
+      <div class="footer-col-title">Legal</div>
+      <ul class="footer-links">
+        <li><a href="#" onclick="openModal('priv');return false;">Política de Privacidad</a></li>
+        <li><a href="#" onclick="openModal('terms');return false;">Términos y Condiciones</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <div class="footer-copy">
+      © 2026 Cosmopolita Spa &amp; Dermocosmética. Todos los derechos reservados.<br>
+      Created by <a href="https://onemarketinggroup.com/" target="_blank">ONE MARKETING GROUP</a>
+    </div>
+    <div class="footer-legal-links">
+      <a href="#" onclick="openModal('priv');return false;">Privacidad</a>
+      <a href="#" onclick="openModal('terms');return false;">Términos</a>
+    </div>
+  </div>
+</footer>
+
+<!-- Modal Privacidad -->
+<div class="modal-overlay" id="modal-priv">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('priv')">✕</button>
+    <div class="modal-title">Política de Privacidad</div>
+    <div class="modal-body">
+      <p><strong>Cosmopolita Spa &amp; Dermocosmética</strong> se compromete a proteger la privacidad de sus usuarias.</p>
+      <p><strong>Datos que recopilamos:</strong> nombre y respuestas del test de piel ingresadas voluntariamente.</p>
+      <p><strong>Uso de los datos:</strong> Se utilizan exclusivamente para generar tu pre-diagnóstico personalizado y facilitar la comunicación con tu especialista. No compartimos tus datos con terceros.</p>
+      <p><strong>Almacenamiento:</strong> Los datos se procesan en el momento del test y no se almacenan de forma permanente en nuestros servidores.</p>
+      <p><strong>Derechos:</strong> Puedes solicitar la eliminación de cualquier dato escribiéndonos a cosmopolitaec@gmail.com.</p>
+      <p><strong>Contacto:</strong> 18 de Noviembre 04-38 y Cristóbal Padilla, Cariamanga – Loja – Ecuador · 099 905 5777</p>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Términos -->
+<div class="modal-overlay" id="modal-terms">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('terms')">✕</button>
+    <div class="modal-title">Términos y Condiciones</div>
+    <div class="modal-body">
+      <p><strong>1. Uso del test:</strong> Este test es una herramienta orientativa de pre-diagnóstico. No reemplaza una consulta médica o dermatológica profesional.</p>
+      <p><strong>2. Resultados:</strong> Los resultados generados con inteligencia artificial son referenciales. Cosmopolita no se responsabiliza por decisiones tomadas únicamente con base en este test sin consulta profesional previa.</p>
+      <p><strong>3. Menores de edad:</strong> Dirigido a personas mayores de 18 años o bajo supervisión de un adulto responsable.</p>
+      <p><strong>4. Propiedad intelectual:</strong> Todos los contenidos, diseño e interfaz son propiedad de Cosmopolita Spa &amp; Dermocosmética.</p>
+      <p><strong>5. Modificaciones:</strong> Nos reservamos el derecho de actualizar estos términos en cualquier momento.</p>
+      <p><strong>6. Contacto:</strong> cosmopolitaec@gmail.com · 099 905 5777</p>
+    </div>
+  </div>
 </div>
 
 <script>
-const CONDITIONS = [
+/* ── Sparkles ── */
+(function(){
+  const w=document.getElementById('sparkle-wrap');
+  for(let i=0;i<32;i++){
+    const sp=document.createElement('div');
+    sp.className='sp';
+    const sz=3+Math.random()*6;
+    sp.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;width:${sz}px;height:${sz}px;--dur:${3+Math.random()*5}s;--delay:${Math.random()*8}s;`;
+    w.appendChild(sp);
+  }
+})();
+
+/* ── Modals ── */
+function openModal(id){
+  document.getElementById('modal-'+id).classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeModal(id){
+  document.getElementById('modal-'+id).classList.remove('open');
+  document.body.style.overflow='';
+}
+document.querySelectorAll('.modal-overlay').forEach(m=>{
+  m.addEventListener('click',e=>{ if(e.target===m){ m.classList.remove('open'); document.body.style.overflow=''; } });
+});
+
+/* ── Data ── */
+const CONDITIONS=[
   {id:'1.1',label:'Acné'},
   {id:'1.2',label:'Manchas'},
   {id:'1.3',label:'Resequedad'},
@@ -92,7 +558,65 @@ const CONDITIONS = [
   {id:'1.5',label:'Rosácea'},
   {id:'1.6',label:'Brillo excesivo'},
 ];
-const SUBS = {
+
+const COND_IMAGES={
+  '1.1':'https://images.unsplash.com/photo-1588387050429-bcfa6b34dde2?auto=format&fit=crop&w=900&q=70',
+  '1.2':'https://images.unsplash.com/photo-1614108637931-12b6a82e7ec3?auto=format&fit=crop&w=900&q=70',
+  '1.3':'https://images.unsplash.com/photo-1556228578-8c89e6adf883?auto=format&fit=crop&w=900&q=70',
+  '1.4':'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=900&q=70',
+  '1.5':'https://images.unsplash.com/photo-1588387050859-fef41d3a228d?auto=format&fit=crop&w=900&q=70',
+  '1.6':'https://images.unsplash.com/photo-1631730486572-226d1f595b68?auto=format&fit=crop&w=900&q=70',
+};
+
+/* Image per sub-option for the gallery */
+const SUB_IMAGES={
+  '1.1.1':'https://images.unsplash.com/photo-1588387050429-bcfa6b34dde2?auto=format&fit=crop&w=500&q=70',
+  '1.1.2':'https://images.unsplash.com/photo-1606170033648-5d55a3edf314?auto=format&fit=crop&w=500&q=70',
+  '1.1.3':'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=500&q=70',
+  '1.1.4':'https://images.unsplash.com/photo-1631730486784-74757c5c0e18?auto=format&fit=crop&w=500&q=70',
+  '1.2.1':'https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?auto=format&fit=crop&w=500&q=70',
+  '1.2.2':'https://images.unsplash.com/photo-1614108637931-12b6a82e7ec3?auto=format&fit=crop&w=500&q=70',
+  '1.2.3':'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=500&q=70',
+  '1.2.4':'https://images.unsplash.com/photo-1588771930963-a08b4d4c3efa?auto=format&fit=crop&w=500&q=70',
+  '1.2.5':'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=500&q=70',
+  '1.2.6':'https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=500&q=70',
+  '1.3.1':'https://images.unsplash.com/photo-1556228578-8c89e6adf883?auto=format&fit=crop&w=500&q=70',
+  '1.3.2':'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=500&q=70',
+  '1.3.3':'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=500&q=70',
+  '1.4.1':'https://images.unsplash.com/photo-1601412436967-dc84ab1d2434?auto=format&fit=crop&w=500&q=70',
+  '1.4.2':'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=500&q=70',
+  '1.4.3':'https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?auto=format&fit=crop&w=500&q=70',
+  '1.5.1':'https://images.unsplash.com/photo-1588387050859-fef41d3a228d?auto=format&fit=crop&w=500&q=70',
+  '1.5.2':'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=500&q=70',
+  '1.5.3':'https://images.unsplash.com/photo-1556228578-8c89e6adf883?auto=format&fit=crop&w=500&q=70',
+  '1.6.1':'https://images.unsplash.com/photo-1631730486572-226d1f595b68?auto=format&fit=crop&w=500&q=70',
+  '1.6.2':'https://images.unsplash.com/photo-1588387050429-bcfa6b34dde2?auto=format&fit=crop&w=500&q=70',
+  '1.6.3':'https://images.unsplash.com/photo-1606170033648-5d55a3edf314?auto=format&fit=crop&w=500&q=70',
+};
+
+/* Images that change when you select a single-select option */
+const SKIN_IMAGES={
+  '2.1':'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=800&q=75',
+  '2.2':'https://images.unsplash.com/photo-1631730486572-226d1f595b68?auto=format&fit=crop&w=800&q=75',
+  '2.3':'https://images.unsplash.com/photo-1556228578-8c89e6adf883?auto=format&fit=crop&w=800&q=75',
+  '2.4':'https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?auto=format&fit=crop&w=800&q=75',
+  '2.5':'https://images.unsplash.com/photo-1588387050859-fef41d3a228d?auto=format&fit=crop&w=800&q=75',
+};
+const SOLAR_IMAGES={
+  '3.1':'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=800&q=75',
+  '3.2':'https://images.unsplash.com/photo-1473496169904-658ba7574b0d?auto=format&fit=crop&w=800&q=75',
+  '3.3':'https://images.unsplash.com/photo-1530521954074-e64f6810b32d?auto=format&fit=crop&w=800&q=75',
+  '3.4':'https://images.unsplash.com/photo-1504701954957-2010ec3bcec1?auto=format&fit=crop&w=800&q=75',
+};
+const PROT_IMAGES={
+  '4.1':'https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?auto=format&fit=crop&w=800&q=75',
+  '4.2':'https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?auto=format&fit=crop&w=800&q=75',
+  '4.3':'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&q=75',
+  '4.4':'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&q=75',
+  '4.5':'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&q=75',
+};
+
+const SUBS={
   '1.1':{label:'Acné',opts:[
     {id:'1.1.1',label:'Acné leve',desc:'Espinillas ocasionales sin inflamación'},
     {id:'1.1.2',label:'Acné moderado',desc:'Pústulas y zonas afectadas'},
@@ -149,36 +673,66 @@ const PROT=[
   {id:'4.5',label:'Siempre',desc:'Todos los días'},
 ];
 
-// Eliminamos const PRODUCTS porque ya no se usa.
+const WHATSAPP_NUMBER='593999055777';
+let s={step:-1,conds:[],subs:{},skin:null,solar:null,prot:null,subIdx:0,name:''};
+let lastResultText=''; let lastPills=[];
 
-let s={step:0,conds:[],subs:{},skin:null,solar:null,prot:null,subIdx:0};
-
-function totalSteps(){ return 2 + s.conds.length + 2; }
-function dotStep(){
-  if(s.step===0) return 0;
+/* ── Timeline ── */
+function timelineLabels(){
+  const labels=['Inicio'];
+  s.conds.forEach(cid=>{ labels.push(CONDITIONS.find(c=>c.id===cid)?.label||''); });
+  labels.push('Piel','Sol','Protector');
+  return labels;
+}
+function totalSteps(){ return 1+Math.max(s.conds.length,1)+3; }
+function currentStepIdx(){
+  if(s.step<=0) return 0;
   if(s.step===1) return 1+s.subIdx;
   if(s.step===2) return 1+s.conds.length;
   if(s.step===3) return 2+s.conds.length;
-  return 3+s.conds.length;
+  if(s.step===4) return 3+s.conds.length;
+  return 4+s.conds.length;
 }
-
 function renderDots(){
   const el=document.getElementById('dots');
-  const t=totalSteps(), c=dotStep();
-  el.innerHTML=[...Array(t)].map((_,i)=>{
-    let cls='dot';
-    if(i===c) cls+=' active';
-    else if(i<c) cls+=' done';
-    return `<div class="${cls}"></div>`;
-  }).join('');
+  if(s.step===-1){el.innerHTML='';return;}
+  const labels=timelineLabels(), cur=currentStepIdx();
+  let html='';
+  labels.forEach((_,i)=>{
+    let cls='tl-num';
+    if(i===cur) cls+=' active';
+    else if(i<cur) cls+=' done';
+    html+=`<div class="tl-item"><div class="${cls}">${i+1}</div></div>`;
+    if(i<labels.length-1) html+=`<div class="tl-bar${i<cur?' done':''}"></div>`;
+  });
+  el.innerHTML=html;
 }
 
+/* ── Helpers ── */
 function opt(o,sel,multi){
   return `<button class="opt${sel?' sel':''}" onclick="toggle('${o.id}',${multi})">
     <div>${o.label}</div>${o.desc?`<div class="desc">${o.desc}</div>`:''}
   </button>`;
 }
 
+function buildGallery(selIds, fallbackImg){
+  const imgs=selIds.map(id=>SUB_IMAGES[id]).filter(Boolean);
+  const show=imgs.length?imgs:[fallbackImg].filter(Boolean);
+  if(!show.length) return `<div class="gallery-placeholder"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>`;
+  const n=show.length;
+  let cls='gallery-panel';
+  if(n===1) cls+=' g1';
+  else if(n===3) cls+=' g3';
+  else if(n>=4) cls+=' g4';
+  const displayed=show.slice(0,4);
+  return `<div class="${cls}">${displayed.map(src=>`<div class="gi"><img src="${src}" alt="" loading="lazy"/></div>`).join('')}</div>`;
+}
+
+function sideImg(src,alt){
+  return `<div class="card-side-image"><img src="${src}" alt="${alt}" loading="lazy" id="side-img"/></div>`;
+}
+
+/* ── State ── */
 function toggle(id,multi){
   if(s.step===0){
     if(multi){const i=s.conds.indexOf(id);i>=0?s.conds.splice(i,1):s.conds.push(id);}
@@ -188,10 +742,20 @@ function toggle(id,multi){
     if(!s.subs[cid])s.subs[cid]=[];
     const a=s.subs[cid],i=a.indexOf(id);
     i>=0?a.splice(i,1):a.push(id);
-  } else if(s.step===2) s.skin=id;
-  else if(s.step===3) s.solar=id;
-  else if(s.step===4) s.prot=id;
-  render();
+  } else if(s.step===2){
+    s.skin=id;
+    const img=document.getElementById('side-img');
+    if(img&&SKIN_IMAGES[id]){img.src=SKIN_IMAGES[id];}
+  } else if(s.step===3){
+    s.solar=id;
+    const img=document.getElementById('side-img');
+    if(img&&SOLAR_IMAGES[id]){img.src=SOLAR_IMAGES[id];}
+  } else if(s.step===4){
+    s.prot=id;
+    const img=document.getElementById('side-img');
+    if(img&&PROT_IMAGES[id]){img.src=PROT_IMAGES[id];}
+  }
+  render(false);
 }
 
 function ready(){
@@ -202,7 +766,6 @@ function ready(){
   if(s.step===4) return !!s.prot;
   return false;
 }
-
 function next(){
   if(!ready()) return;
   if(s.step===0){s.step=1;s.subIdx=0;}
@@ -212,65 +775,154 @@ function next(){
   else if(s.step===4){showLoading();return;}
   render();
 }
-
 function back(){
-  if(s.step===0) return;
+  if(s.step<=0) return;
   if(s.step===1){s.subIdx>0?s.subIdx--:(s.step=0);}
   else if(s.step===2){s.step=1;s.subIdx=s.conds.length-1;}
   else s.step--;
   render();
 }
+function startTest(){
+  const inp=document.getElementById('welcomeName');
+  if(inp) s.name=(inp.value||'').trim();
+  s.step=0; render();
+}
 
-function render(){
+/* ── Render ── */
+function render(animate=true){
   renderDots();
   const q=document.getElementById('quiz');
   const total=totalSteps();
 
-  if(s.step===0){
-    q.innerHTML=`<div class="card">
-      <div class="q-label">Paso 1 de ${total}</div>
-      <div class="q-title">¿Qué aspecto de tu piel quieres tratar?</div>
-      <div class="q-hint">Puedes seleccionar varias opciones</div>
-      <div class="opts-grid">${CONDITIONS.map(c=>opt(c,s.conds.includes(c.id),true)).join('')}</div>
-      <div class="nav"><span></span><button class="btn-next${ready()?' on':''}" onclick="next()">Continuar →</button></div>
+  /* WELCOME */
+  if(s.step===-1){
+    q.innerHTML=`<div class="card welcome">
+      <div class="welcome-eyebrow">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+        Diagnóstico exprés · 2 minutos
+      </div>
+      <h1 class="welcome-title">Tu piel habla.<br>Nosotras <em>la escuchamos.</em></h1>
+      <p class="welcome-sub">Antes de tu próxima visita, descúbrelo todo sobre tu piel. Responde unas preguntas simples y recibe un pre-diagnóstico personalizado con inteligencia artificial, listo para compartir con tu especialista.</p>
+      <ul class="feature-list">
+        <li class="feature-item">
+          <span class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg></span>
+          <div class="feature-text"><strong>Identificamos tu perfil de piel único</strong><span>y las condiciones específicas que merecen atención.</span></div>
+        </li>
+        <li class="feature-item">
+          <span class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v4H4zM4 12h10v4H4zM4 20h16"/></svg></span>
+          <div class="feature-text"><strong>Recibes los activos que tu piel necesita</strong><span>en un pre-diagnóstico claro, sin tecnicismos.</span></div>
+        </li>
+        <li class="feature-item">
+          <span class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg></span>
+          <div class="feature-text"><strong>Lo compartes con tu especialista en un clic</strong><span>y agendas tu cita sin esperas ni trámites.</span></div>
+        </li>
+      </ul>
+      <input id="welcomeName" class="name-input" type="text" placeholder="Tu nombre (para personalizar tu resumen)" autocomplete="name" value="${escapeHtml(s.name||'')}"/>
+      <div class="nav" style="justify-content:flex-end">
+        <button class="btn-next on" onclick="startTest()">Comenzar test →</button>
+      </div>
     </div>`;
+    return;
+  }
+
+  let html='';
+
+  /* STEP 0: Condiciones (no imagen) */
+  if(s.step===0){
+    html=`<div class="card">
+      <div class="q-label">Paso 1 de ${total}</div>
+      <div class="q-title">¿Qué está pidiendo tu piel hoy?</div>
+      <div class="q-hint">Puedes elegir más de una opción — queremos entender todo lo que te preocupa.</div>
+      <div class="opts-grid">${CONDITIONS.map(c=>opt(c,s.conds.includes(c.id),true)).join('')}</div>
+      <div class="nav">
+        <button class="btn-back" onclick="s.step=-1;render()">← Atrás</button>
+        <button class="btn-next${ready()?' on':''}" onclick="next()">Continuar →</button>
+      </div>
+    </div>`;
+
+  /* STEP 1: Sub-condiciones con galería dinámica */
   } else if(s.step===1){
     const cid=s.conds[s.subIdx], sub=SUBS[cid], sel=s.subs[cid]||[];
-    q.innerHTML=`<div class="card">
-      <div class="q-label">Paso ${1+s.subIdx+1} de ${total} · ${sub.label}</div>
-      <div class="q-title">¿Cómo se manifiesta tu ${sub.label.toLowerCase()}?</div>
-      <div class="q-hint">Selecciona las que apliquen</div>
-      <div class="opts-list">${sub.opts.map(o=>opt(o,sel.includes(o.id),true)).join('')}</div>
-      <div class="nav"><button class="btn-back" onclick="back()">← Atrás</button><button class="btn-next${ready()?' on':''}" onclick="next()">Continuar →</button></div>
+    const gallery=buildGallery(sel, COND_IMAGES[cid]);
+    html=`<div class="card">
+      <div class="card-gallery-layout">
+        ${gallery}
+        <div>
+          <div class="q-label">Paso ${1+s.subIdx+1} de ${total} · ${sub.label}</div>
+          <div class="q-title">¿Cómo se manifiesta tu ${sub.label.toLowerCase()}?</div>
+          <div class="q-hint">Selecciona todas las que apliquen — la galería irá mostrándolas.</div>
+          <div class="opts-list" style="margin-top:.75rem">${sub.opts.map(o=>opt(o,sel.includes(o.id),true)).join('')}</div>
+        </div>
+      </div>
+      <div class="nav">
+        <button class="btn-back" onclick="back()">← Atrás</button>
+        <button class="btn-next${ready()?' on':''}" onclick="next()">Continuar →</button>
+      </div>
     </div>`;
+
+  /* STEP 2: Tipo de piel — imagen cambia al seleccionar */
   } else if(s.step===2){
-    q.innerHTML=`<div class="card">
-      <div class="q-label">Paso ${1+s.conds.length+1} de ${total}</div>
-      <div class="q-title">¿Cómo describirías la apariencia de tu piel?</div>
-      <div class="q-hint">Selecciona solo una opción</div>
-      <div class="opts-list">${SKIN.map(o=>opt(o,s.skin===o.id,false)).join('')}</div>
-      <div class="nav"><button class="btn-back" onclick="back()">← Atrás</button><button class="btn-next${ready()?' on':''}" onclick="next()">Continuar →</button></div>
+    const imgSrc=s.skin?SKIN_IMAGES[s.skin]:SKIN_IMAGES['2.1'];
+    html=`<div class="card">
+      <div class="card-with-image">
+        ${sideImg(imgSrc,'Tipo de piel')}
+        <div>
+          <div class="q-label">Paso ${1+s.conds.length+1} de ${total}</div>
+          <div class="q-title">¿Cómo es tu piel en un día normal?</div>
+          <div class="q-hint">Elige la que mejor te describe.</div>
+          <div class="opts-list" style="margin-top:.75rem">${SKIN.map(o=>opt(o,s.skin===o.id,false)).join('')}</div>
+        </div>
+      </div>
+      <div class="nav">
+        <button class="btn-back" onclick="back()">← Atrás</button>
+        <button class="btn-next${ready()?' on':''}" onclick="next()">Continuar →</button>
+      </div>
     </div>`;
+
+  /* STEP 3: Exposición solar — imagen cambia */
   } else if(s.step===3){
-    q.innerHTML=`<div class="card">
-      <div class="q-label">Paso ${2+s.conds.length+1} de ${total}</div>
-      <div class="q-title">¿Cuál es tu exposición solar diaria?</div>
-      <div class="q-hint">Selecciona solo una opción</div>
-      <div class="opts-list">${SOLAR.map(o=>opt(o,s.solar===o.id,false)).join('')}</div>
-      <div class="nav"><button class="btn-back" onclick="back()">← Atrás</button><button class="btn-next${ready()?' on':''}" onclick="next()">Continuar →</button></div>
+    const imgSrc=s.solar?SOLAR_IMAGES[s.solar]:SOLAR_IMAGES['3.1'];
+    html=`<div class="card">
+      <div class="card-with-image">
+        ${sideImg(imgSrc,'Exposición solar')}
+        <div>
+          <div class="q-label">Paso ${2+s.conds.length+1} de ${total}</div>
+          <div class="q-title">¿Cuánto sol recibe tu piel al día?</div>
+          <div class="q-hint">El sol afecta la piel más de lo que imaginamos. Sé honesta.</div>
+          <div class="opts-list" style="margin-top:.75rem">${SOLAR.map(o=>opt(o,s.solar===o.id,false)).join('')}</div>
+        </div>
+      </div>
+      <div class="nav">
+        <button class="btn-back" onclick="back()">← Atrás</button>
+        <button class="btn-next${ready()?' on':''}" onclick="next()">Continuar →</button>
+      </div>
     </div>`;
+
+  /* STEP 4: Protector — imagen cambia */
   } else if(s.step===4){
-    q.innerHTML=`<div class="card">
-      <div class="q-label">Paso ${3+s.conds.length+1} de ${total}</div>
-      <div class="q-title">¿Con qué frecuencia usas protector solar?</div>
-      <div class="q-hint">Selecciona solo una opción</div>
-      <div class="opts-list">${PROT.map(o=>opt(o,s.prot===o.id,false)).join('')}</div>
-      <div class="nav"><button class="btn-back" onclick="back()">← Atrás</button><button class="btn-next${ready()?' on':''}" onclick="next()">Ver mi diagnóstico →</button></div>
+    const imgSrc=s.prot?PROT_IMAGES[s.prot]:PROT_IMAGES['4.3'];
+    html=`<div class="card">
+      <div class="card-with-image">
+        ${sideImg(imgSrc,'Protector solar')}
+        <div>
+          <div class="q-label">Paso ${3+s.conds.length+1} de ${total}</div>
+          <div class="q-title">¿El protector solar es parte de tu rutina?</div>
+          <div class="q-hint">Sin juicios — solo queremos ayudarte a proteger tu inversión en tu piel.</div>
+          <div class="opts-list" style="margin-top:.75rem">${PROT.map(o=>opt(o,s.prot===o.id,false)).join('')}</div>
+        </div>
+      </div>
+      <div class="nav">
+        <button class="btn-back" onclick="back()">← Atrás</button>
+        <button class="btn-next${ready()?' on':''}" onclick="next()">Ver mi diagnóstico →</button>
+      </div>
     </div>`;
   }
+
+  q.innerHTML=html;
+  if(!animate){ const c=q.querySelector('.card'); if(c) c.style.animation='none'; }
 }
 
-// Nuevo Prompt Orientado al Resumen Médico
+/* ── AI call ── */
 function buildPrompt(){
   const cLabels=s.conds.map(id=>CONDITIONS.find(x=>x.id===id)?.label||id);
   let sub='';
@@ -293,10 +945,12 @@ La clienta acaba de terminar su test de piel con estos resultados:
 - SOL Y PROTECCIÓN: ${solL} / Usa protector: ${protL}
 
 Redacta un mensaje dirigido a la clienta (máximo 150 palabras) con esta estructura:
-1. Saludo cálido confirmando que su test ha finalizado ('¡Hola! Tu test ha culminado...').
-2. Un diagnóstico muy breve y comprensivo ('Considerando que tienes ${skinL} con tendencia a...').
-3. Una lista con viñetas de 3 o 4 ingredientes activos clave que necesita su piel (ej. Ácido salicílico, etc.). Pon el nombre del ingrediente en negrita y da una brevísima razón de por qué le sirve. NO menciones marcas ni productos.
-4. Un cierre invitándola cordialmente a agendar su cita médica para obtener su protocolo personalizado en PDF.`;
+1. Saludo cálido confirmando que su test ha finalizado.
+2. Un diagnóstico muy breve y comprensivo.
+3. Una lista de 3 o 4 ingredientes activos clave que necesita su piel con una brevísima razón. NO menciones marcas ni productos.
+4. Un cierre invitándola cordialmente a agendar su cita médica para obtener su protocolo personalizado en PDF.
+
+FORMATO DE SALIDA: Escribe el mensaje como TEXTO PLANO, en párrafos naturales separados por saltos de línea. NO uses Markdown: nada de #, ##, **, __, guiones (-), asteriscos ni viñetas. Para los ingredientes escribe cada uno en su propia línea iniciando con un emoji (✨ 🌿 💧 ☀️ 🌸). El resultado debe leerse natural, sin símbolos de formato.`;
 }
 
 function buildPills(){
@@ -318,15 +972,14 @@ function showLoading(){
   document.getElementById('quiz').innerHTML=`
     <div class="card loading">
       <div class="ld-dots"><div class="ld-dot"></div><div class="ld-dot"></div><div class="ld-dot"></div></div>
-      <div class="ld-title">Analizando tus respuestas...</div>
-      <div class="ld-sub">Generando pre-diagnóstico con IA</div>
+      <div class="ld-title">Analizando tu perfil de piel...</div>
+      <div class="ld-sub">Preparando tu pre-diagnóstico personalizado con IA</div>
     </div>`;
   callAPI();
 }
 
 async function callAPI(){
-  const prompt=buildPrompt();
-  const pills=buildPills();
+  const prompt=buildPrompt(), pills=buildPills();
   try{
     const r=await fetch('/api/rutina',{
       method:'POST',
@@ -335,33 +988,96 @@ async function callAPI(){
     });
     const data=await r.json();
     if(!r.ok) throw new Error(data.error||'Error desconocido de conexión');
-    showResult(data.result, pills);
-  } catch(e){
+    showResult(data.result,pills);
+  }catch(e){
     document.getElementById('quiz').innerHTML+=`<p class="error">❌ ${e.message}</p>`;
   }
 }
 
-function showResult(text,pills){
-  // Convertimos el Markdown de Gemini a HTML si la librería está disponible
-  const formattedText = typeof marked !== 'undefined' ? marked.parse(text) : text;
+function escapeHtml(t){
+  return String(t).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
 
+function showResult(text,pills){
+  lastResultText=text; lastPills=pills;
   document.getElementById('quiz').innerHTML=`
     <div class="card">
-      <div class="q-label">Tu Pre-Diagnóstico Cosmopolita</div>
-      <div class="profile-pills">${pills.map(p=>`<span class="pill">${p}</span>`).join('')}</div>
-      <div class="result-text">${formattedText}</div>
+      <div class="q-label">Tu Pre-Diagnóstico · Cosmopolita</div>
+      <div class="profile-pills">${pills.map(p=>`<span class="pill">${escapeHtml(p)}</span>`).join('')}</div>
+      <div class="result-text">${escapeHtml(text)}</div>
     </div>
     <div class="cta-card">
-      <div class="cta-title">Da el siguiente paso hacia tu piel ideal</div>
-      <div class="cta-sub">Agenda una consulta con nuestra especialista para recibir tu protocolo completo y la rutina recomendada en PDF.</div>
-      <a href="https://wa.me/numerodecosmopolita" target="_blank" class="btn-cta">Agendar mi cita ahora →</a>
+      <div class="cta-title">¿Lista para tu protocolo completo?</div>
+      <div class="cta-sub">Descarga tu resumen y compártelo con tu especialista de Cosmopolita.<br>Tu cita te espera.</div>
+      <input id="clientName" class="name-input" type="text" placeholder="Confirma tu nombre completo" autocomplete="name" value="${escapeHtml(s.name||'')}"/>
+      <div id="sendNotice"></div>
+      <button class="btn-cta" onclick="handleDownloadAndSend()">Descargar resumen y agendar cita →</button>
+      <a href="https://wa.me/${WHATSAPP_NUMBER}" target="_blank" class="btn-cta secondary">Solo agendar mi cita por WhatsApp</a>
     </div>
     <button class="restart" onclick="restart()">Volver a hacer el test</button>`;
 }
 
+function generatePDF(name){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'pt',format:'a4'});
+  const margin=50,pageW=doc.internal.pageSize.getWidth(),pageH=doc.internal.pageSize.getHeight();
+  const contentW=pageW-margin*2; let y=margin;
+  doc.setFillColor(252,232,228); doc.rect(0,0,pageW,72,'F');
+  doc.setTextColor(77,76,76); doc.setFont('helvetica','bold'); doc.setFontSize(20);
+  doc.text('Cosmopolita',margin,36);
+  doc.setFont('helvetica','italic'); doc.setFontSize(11);
+  doc.text('Spa & Dermocosmética · Cariamanga, Ecuador',margin,56);
+  y=100;
+  doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(77,76,76);
+  doc.text(`Cliente: ${name}`,margin,y); y+=18;
+  doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(120,120,120);
+  const today=new Date().toLocaleDateString('es-EC',{year:'numeric',month:'long',day:'numeric'});
+  doc.text(`Fecha: ${today}`,margin,y); y+=22;
+  if(lastPills.length){
+    doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(77,76,76);
+    doc.text('Perfil de piel:',margin,y); y+=14;
+    doc.setFont('helvetica','normal'); doc.setFontSize(10);
+    const pl=doc.splitTextToSize(lastPills.join(' · '),contentW);
+    doc.text(pl,margin,y); y+=pl.length*13+10;
+  }
+  doc.setDrawColor(249,206,198); doc.setLineWidth(1); doc.line(margin,y,pageW-margin,y); y+=18;
+  doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(77,76,76);
+  doc.text('Tu pre-diagnóstico',margin,y); y+=18;
+  doc.setFont('helvetica','normal'); doc.setFontSize(11); doc.setTextColor(60,60,60);
+  const bodyLines=doc.splitTextToSize(lastResultText,contentW);
+  for(const line of bodyLines){
+    if(y>pageH-margin){doc.addPage();y=margin;}
+    doc.text(line,margin,y); y+=15;
+  }
+  y=pageH-40;
+  doc.setDrawColor(249,206,198); doc.line(margin,y,pageW-margin,y);
+  doc.setFont('helvetica','italic'); doc.setFontSize(9); doc.setTextColor(140,140,140);
+  doc.text('Cosmopolita Spa & Dermocosmética · 099 905 5777 · cosmopolitaec@gmail.com',margin,y+16);
+  const safeName=name.trim().replace(/\s+/g,'-').replace(/[^a-zA-Z0-9-]/g,'');
+  doc.save(`Cosmopolita-Diagnostico-${safeName||'cliente'}.pdf`);
+}
+
+function handleDownloadAndSend(){
+  const input=document.getElementById('clientName');
+  const notice=document.getElementById('sendNotice');
+  const name=(input.value||'').trim();
+  if(!name){
+    notice.innerHTML=`<div class="notice" style="background:#fde8e8;border-color:#f5b7b7;color:#a02828;">Por favor ingresa tu nombre para generar el PDF.</div>`;
+    input.focus(); return;
+  }
+  s.name=name;
+  try{ generatePDF(name); }
+  catch(e){ notice.innerHTML=`<div class="notice" style="background:#fde8e8;border-color:#f5b7b7;color:#a02828;">No pudimos generar el PDF: ${escapeHtml(e.message)}</div>`; return; }
+  const msg=`Hola Cosmopolita, soy ${name}. Acabo de completar mi test de piel y quiero agendar una cita. Adjunto mi resumen en PDF.`;
+  const waUrl=`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
+  notice.innerHTML=`
+    <div class="notice">Tu PDF se descargó como <strong>Cosmopolita-Diagnostico-${escapeHtml(name)}.pdf</strong>.<br><br>Te llevamos a WhatsApp — adjunta el archivo para que tu especialista lo reciba.</div>
+    <a href="${waUrl}" target="_blank" class="btn-cta" style="margin-top:8px;">Abrir WhatsApp ahora →</a>`;
+}
+
 function restart(){
-  s={step:0,conds:[],subs:{},skin:null,solar:null,prot:null,subIdx:0};
-  render();
+  s={step:-1,conds:[],subs:{},skin:null,solar:null,prot:null,subIdx:0,name:s.name||''};
+  lastResultText=''; lastPills=[]; render();
 }
 
 render();
